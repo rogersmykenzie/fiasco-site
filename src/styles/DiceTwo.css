@@ -1,0 +1,10 @@
+.dice-2-dot__container__1 {
+  position: absolute;
+  top: 10%;
+  left: 10%;
+}
+.dice-2-dot__container__2 {
+  position: absolute;
+  right: 10%;
+  bottom: 10%;
+}

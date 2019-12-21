@@ -1,0 +1,30 @@
+.dice-6-dot__container__1 {
+  position: absolute;
+  left: 10%;
+  top: 10%;
+}
+.dice-6-dot__container__2 {
+  position: absolute;
+  right: 10%;
+  top: 10%;
+}
+.dice-6-dot__container__3 {
+  position: absolute;
+  left: 10%;
+  bottom: 10%;
+}
+.dice-6-dot__container__4 {
+  position: absolute;
+  right: 10%;
+  bottom: 10%;
+}
+.dice-6-dot__container__5 {
+  position: absolute;
+  left: 10%;
+  top: 40%;
+}
+.dice-6-dot__container__6 {
+  position: absolute;
+  right: 10%;
+  top: 40%;
+}
