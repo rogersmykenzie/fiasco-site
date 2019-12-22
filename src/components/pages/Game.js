@@ -1,5 +1,7 @@
 import React from "react";
 import io from "socket.io-client";
+import axios from "axios";
+import { Link } from "react-router-dom";
 //components
 import Dice from "../reusable/Dice";
 //reducer
@@ -15,18 +17,25 @@ function Game(props) {
   const [sid, setSid] = React.useState("");
   const [game, dispatch] = React.useReducer(gameReducer, { players: [] });
   const [text, setText] = React.useState("");
+  const [fontSize, setFontSize] = React.useState(12);
 
   React.useEffect(() => {
-    socket.emit("roomJoin", { url: props.match.params.roomID });
+    axios.post("/server/cookie").then(() => {
+      socket.emit("roomJoin", { url: props.match.params.roomID });
+    });
     socket.on("roomJoinResponse", data => {
+      console.log(data);
       if (data.error) {
         setErrorMessage(data.error);
       } else {
-        setSid(data.sid);
+        if (sid === "") {
+          setSid(data.sid);
+        }
         dispatch({
           type: "SET_GAME",
           payload: data.data
         });
+        setText(data.data.text);
       }
     });
 
@@ -94,6 +103,13 @@ function Game(props) {
   const playersIndex = game.players.findIndex(val => val.id === sid);
   return (
     <div>
+      <Link to="/">
+        <img
+          className="game__home"
+          src="https://image.flaticon.com/icons/png/512/25/25694.png"
+          alt="home_icon"
+        />
+      </Link>
       <aside className="game_modul__container">
         <h1>{errorMessage.split("_").join(" ")}</h1>
         {errorMessage === "PLEASE_ENTER_NAME" ? (
@@ -144,14 +160,38 @@ function Game(props) {
             />
           );
         })}
-
-      <textarea
-        onChange={e => updateText(e.target.value)}
-        className="game__textarea"
-        rows="50"
-        columns="50"
-        value={text}
-      ></textarea>
+      <menu className="game__menu">
+        <div className="game__players">
+          <h2>Members:</h2>
+          <ul>
+            {game.players.map(val => (
+              <li className="game__member">{val.name}</li>
+            ))}
+          </ul>
+        </div>
+        <div className="game__chat">
+          <textarea
+            onChange={e => updateText(e.target.value)}
+            className="game__textarea"
+            value={text}
+            style={{ fontSize: `${fontSize}px` }}
+          ></textarea>
+          <div>
+            <button
+              className="game__button--increase-font"
+              onClick={() => setFontSize(fontSize - 2)}
+            >
+              -
+            </button>
+            <button
+              className="game__button--decrease-font"
+              onClick={() => setFontSize(fontSize + 2)}
+            >
+              +
+            </button>
+          </div>
+        </div>
+      </menu>
     </div>
   );
 }

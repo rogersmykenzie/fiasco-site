@@ -53,8 +53,8 @@ class Game {
   updateDiePosition(id, x, y) {
     function updateElement(val, i, arr) {
       if (val.id === id) {
-        arr[i].x = x;
-        arr[i].y = y;
+        arr[i].x = x < 50 ? 50 : x;
+        arr[i].y = y < 50 ? 50 : y - 50;
       }
     }
 

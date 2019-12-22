@@ -6,7 +6,7 @@ const { Game } = require("./model/Game");
 const SocketResponse = require("./model/SocketResponse");
 const session = require("express-session");
 
-const SERVER_PORT = 5050;
+const SERVER_PORT = 5051;
 const app = express();
 const server = require("http").Server(app);
 const io = require("socket.io")(server);
@@ -44,7 +44,8 @@ app.post("/server/cookie", (req, res) => {
   if (req.session) {
     res.sendStatus(200);
   } else {
-    res.sendStatus(500);
+    req.session = {};
+    res.sendStatus(200);
   }
 });
 
@@ -53,15 +54,15 @@ const games = [new Game("/pp", 4)];
 
 io.on("connection", socket => {
   let cookies = socket.handshake.headers.cookie;
-  const cookiesObj = cookies.split(" ").reduce((acc, val) => {
-    const eachCookie = val.split("=");
-    return {
-      ...acc,
-      [eachCookie[0]]: eachCookie[1]
-    };
-  }, {});
-
-  let currGameIndex = -1;
+  const cookiesObj = cookies
+    ? cookies.split(" ").reduce((acc, val) => {
+        const eachCookie = val.split("=");
+        return {
+          ...acc,
+          [eachCookie[0]]: eachCookie[1]
+        };
+      }, {})
+    : {};
 
   socket.on("newGame", data => {
     let url = getRandomUrl();
@@ -74,7 +75,7 @@ io.on("connection", socket => {
   });
 
   socket.on("roomJoin", data => {
-    currGameIndex = games.findIndex(val => val.url === `/${data.url}`);
+    let currGameIndex = games.findIndex(val => val.url === `/${data.url}`);
     let sid = cookiesObj[`connect.sid`];
     if (currGameIndex < 0) {
       socket.emit(
@@ -93,6 +94,10 @@ io.on("connection", socket => {
           );
         } else {
           games[currGameIndex].addPlayer(sid, data.name);
+          socket.broadcast.emit(
+            "roomJoinResponse",
+            new SocketResponse(games[currGameIndex], undefined, sid)
+          );
           socket.emit(
             "roomJoinResponse",
             new SocketResponse(games[currGameIndex], undefined, sid)
@@ -108,6 +113,7 @@ io.on("connection", socket => {
   });
 
   socket.on("dieRoll", data => {
+    let currGameIndex = games.findIndex(val => val.url === `${data.url}`);
     games[currGameIndex].updateDieValue(data.id, data.value);
     socket.broadcast.emit(
       "dieRollResponse",
@@ -127,6 +133,8 @@ io.on("connection", socket => {
   });
 
   socket.on("dieMove", data => {
+    let currGameIndex = games.findIndex(val => val.url === `${data.url}`);
+    console.log(data);
     games[currGameIndex].updateDiePosition(data.id, data.x, data.y);
 
     socket.broadcast.emit(
@@ -146,6 +154,7 @@ io.on("connection", socket => {
   });
 
   socket.on(`bringDieToFront`, data => {
+    let currGameIndex = games.findIndex(val => val.url === `/${data.url}`);
     games[currGameIndex].bringDieToFront(data.id);
     console.log("here");
 
@@ -167,6 +176,7 @@ io.on("connection", socket => {
   });
 
   socket.on("setText", data => {
+    let currGameIndex = games.findIndex(val => val.url === `${data.url}`);
     games[currGameIndex].setText(data.text);
 
     socket.broadcast.emit(

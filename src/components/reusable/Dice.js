@@ -57,7 +57,8 @@ function Dice(props) {
   }
   function handleDrag(e) {
     console.log(e);
-    setValue(false);
+    // setValue(false);
+    updateLocation(e);
     // setX(e.pageX);
     // setY(e.pageY);
   }
@@ -74,7 +75,7 @@ function Dice(props) {
   return (
     <Draggable
       onStart={bringToFront}
-      onDrag={handleDrag}
+      // onDrag={handleDrag}
       onStop={updateLocation}
       position={{ x: props.x - 50, y: props.y - 121.83 }}
     >
